@@ -97,6 +97,7 @@
                     android:layout_weight="1"
                     android:background="@android:color/transparent"
                     android:hint="@string/action_search"
+                    android:gravity="start|center_vertical"
                     android:fontFamily="sans-serif"
                     android:imeOptions="flagNoExtractUi|actionSearch"
                     android:inputType="text"
