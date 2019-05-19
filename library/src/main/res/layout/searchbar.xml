@@ -100,7 +100,6 @@
                     android:gravity="start|center_vertical"
                     android:fontFamily="sans-serif"
                     android:imeOptions="flagNoExtractUi|actionSearch"
-                    android:textDirection="anyRtl"
                     android:inputType="text"
                     android:maxLines="1"
                     android:textAppearance="?android:attr/textAppearanceMedium"
