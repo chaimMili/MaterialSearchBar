@@ -61,7 +61,7 @@
                 android:maxLines="1"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textColor="@color/searchBarPlaceholderColor"
-                android:textStyle="normal"
+                android:textStyle="bold"
                 android:visibility="visible"
                 tools:text="PlaceHolder"/>
 
