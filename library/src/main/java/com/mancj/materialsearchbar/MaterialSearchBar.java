@@ -36,7 +36,6 @@ import android.widget.TextView;
 import com.mancj.materialsearchbar.adapter.DefaultSuggestionsAdapter;
 import com.mancj.materialsearchbar.adapter.SuggestionsAdapter;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,6 +43,7 @@ import static android.content.ContentValues.TAG;
 
 /**
  * Created by mancj on 19.07.2016.
+ *
  */
 public class MaterialSearchBar extends RelativeLayout implements View.OnClickListener,
         Animation.AnimationListener, SuggestionsAdapter.OnItemViewClickListener,
@@ -51,8 +51,7 @@ public class MaterialSearchBar extends RelativeLayout implements View.OnClickLis
     public static final int BUTTON_SPEECH = 1;
     public static final int BUTTON_NAVIGATION = 2;
     public static final int BUTTON_BACK = 3;
-    public static final int VIEW_VISIBLE = 1;
-    public static final int VIEW_INVISIBLE = 0;
+
     private CardView searchBarCardView;
     private LinearLayout inputContainer;
     private ImageView navIcon;
@@ -64,13 +63,16 @@ public class MaterialSearchBar extends RelativeLayout implements View.OnClickLis
     private TextView placeHolder;
     private View suggestionDivider;
     private View menuDivider;
+
     private OnSearchActionListener onSearchActionListener;
     private boolean searchEnabled;
     private boolean suggestionsVisible;
-    private boolean isSuggestionsEnabled = true;
+    public static final int VIEW_VISIBLE = 1;
+    public static final int VIEW_INVISIBLE = 0;
     private SuggestionsAdapter adapter;
     private float destiny;
 
+    private int menuResource;
     private PopupMenu popupMenu;
 
     private int navIconResId;
@@ -107,6 +109,13 @@ public class MaterialSearchBar extends RelativeLayout implements View.OnClickLis
     private boolean borderlessRippleEnabled = false;
 
     private int textCursorColor;
+    private int leftTextSelectorRes;
+    private int middleTextSelectorRes;
+    private int rightTextSelectorRes;
+    private int leftTextSelectorTint;
+    private int middleTextSelectorTint;
+    private int rightTextSelectorTint;
+    private boolean textSelectorTintEnabled;
     private int highlightedTextColor;
 
     //Nav/Back Arrow Flag
@@ -146,7 +155,7 @@ public class MaterialSearchBar extends RelativeLayout implements View.OnClickLis
         menuIconRes = array.getResourceId(R.styleable.MaterialSearchBar_mt_menuIconDrawable, R.drawable.ic_dots_vertical_black_48dp);
         searchIconRes = array.getResourceId(R.styleable.MaterialSearchBar_mt_searchIconDrawable, R.drawable.ic_magnify_black_48dp);
         speechIconRes = array.getResourceId(R.styleable.MaterialSearchBar_mt_speechIconDrawable, R.drawable.ic_microphone_black_48dp);
-        arrowIconRes = array.getResourceId(R.styleable.MaterialSearchBar_mt_backIconDrawable, R.drawable.ic_arrow_left_black_48dp);
+        // arrowIconRes = array.getResourceId(R.styleable.MaterialSearchBar_mt_backIconDrawable, R.drawable.ic_arrow_left_black_48dp);
         clearIconRes = array.getResourceId(R.styleable.MaterialSearchBar_mt_clearIconDrawable, R.drawable.ic_close_black_48dp);
         navIconTint = array.getColor(R.styleable.MaterialSearchBar_mt_navIconTint, ContextCompat.getColor(getContext(), R.color.searchBarNavIconTintColor));
         menuIconTint = array.getColor(R.styleable.MaterialSearchBar_mt_menuIconTint, ContextCompat.getColor(getContext(), R.color.searchBarMenuIconTintColor));
@@ -167,6 +176,13 @@ public class MaterialSearchBar extends RelativeLayout implements View.OnClickLis
         hintColor = array.getColor(R.styleable.MaterialSearchBar_mt_hintColor, ContextCompat.getColor(getContext(), R.color.searchBarHintColor));
         placeholderColor = array.getColor(R.styleable.MaterialSearchBar_mt_placeholderColor, ContextCompat.getColor(getContext(), R.color.searchBarPlaceholderColor));
         textCursorColor = array.getColor(R.styleable.MaterialSearchBar_mt_textCursorTint, ContextCompat.getColor(getContext(), R.color.searchBarCursorColor));
+//        leftTextSelectorTint = array.getColor(R.styleable.MaterialSearchBar_mt_leftTextSelectorTint, ContextCompat.getColor(getContext(), R.color.leftTextSelectorColor));
+//        middleTextSelectorTint = array.getColor(R.styleable.MaterialSearchBar_mt_middleTextSelectorTint, ContextCompat.getColor(getContext(), R.color.middleTextSelectorColor));
+//        rightTextSelectorTint = array.getColor(R.styleable.MaterialSearchBar_mt_rightTextSelectorTint, ContextCompat.getColor(getContext(), R.color.rightTextSelectorColor));
+//        leftTextSelectorRes = array.getResourceId(R.styleable.MaterialSearchBar_mt_leftTextSelectorDrawable, R.drawable.text_select_handle_left_mtrl_alpha_mtrlsearch);
+//        middleTextSelectorRes = array.getResourceId(R.styleable.MaterialSearchBar_mt_middleTextSelectorDrawable, R.drawable.text_select_handle_middle_mtrl_alpha_mtrlsearch);
+//        rightTextSelectorRes = array.getResourceId(R.styleable.MaterialSearchBar_mt_rightTextSelectorDrawable, R.drawable.text_select_handle_right_mtrl_alpha_mtrlsearch);
+        textSelectorTintEnabled = array.getBoolean(R.styleable.MaterialSearchBar_mt_handlesTintEnabled, true);
         highlightedTextColor = array.getColor(R.styleable.MaterialSearchBar_mt_highlightedTextColor, ContextCompat.getColor(getContext(), R.color.searchBarTextHighlightColor));
 
         destiny = getResources().getDisplayMetrics().density;
@@ -176,24 +192,24 @@ public class MaterialSearchBar extends RelativeLayout implements View.OnClickLis
         if (adapter instanceof DefaultSuggestionsAdapter)
             ((DefaultSuggestionsAdapter) adapter).setListener(this);
         adapter.setMaxSuggestionsCount(maxSuggestionCount);
-        RecyclerView recyclerView = findViewById(R.id.mt_recycler);
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.mt_recycler);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         array.recycle();
 
         //View References
-        searchBarCardView = findViewById(R.id.mt_container);
-        suggestionDivider = findViewById(R.id.mt_divider);
-        menuDivider = findViewById(R.id.mt_menu_divider);
-        menuIcon = findViewById(R.id.mt_menu);
-        clearIcon = findViewById(R.id.mt_clear);
-        searchIcon = findViewById(R.id.mt_search);
-        arrowIcon = findViewById(R.id.mt_arrow);
-        searchEdit = findViewById(R.id.mt_editText);
-        placeHolder = findViewById(R.id.mt_placeholder);
-        inputContainer = findViewById(R.id.inputContainer);
-        navIcon = findViewById(R.id.mt_nav);
+        searchBarCardView = (CardView) findViewById(R.id.mt_container);
+        suggestionDivider = (View) findViewById(R.id.mt_divider);
+        menuDivider = (View) findViewById(R.id.mt_menu_divider);
+        menuIcon = (ImageView) findViewById(R.id.mt_menu);
+        clearIcon = (ImageView) findViewById(R.id.mt_clear);
+        searchIcon = (ImageView) findViewById(R.id.mt_search);
+        arrowIcon = (ImageView) findViewById(R.id.mt_arrow);
+        searchEdit = (EditText) findViewById(R.id.mt_editText);
+        placeHolder = (TextView) findViewById(R.id.mt_placeholder);
+        inputContainer = (LinearLayout) findViewById(R.id.inputContainer);
+        navIcon = (ImageView) findViewById(R.id.mt_nav);
         findViewById(R.id.mt_clear).setOnClickListener(this);
 
         //Listeners
@@ -229,9 +245,9 @@ public class MaterialSearchBar extends RelativeLayout implements View.OnClickLis
 
     private void inflateMenuRequest(int menuResource, int iconResId
     ) {
-        int menuResource1 = menuResource;
-        if (menuResource1 > 0) {
-            ImageView menuIcon = findViewById(R.id.mt_menu);
+        this.menuResource = menuResource;
+        if (this.menuResource > 0) {
+            ImageView menuIcon = (ImageView) findViewById(R.id.mt_menu);
             if (iconResId != -1) {
                 menuIconRes = iconResId;
                 menuIcon.setImageResource(menuIconRes);
@@ -243,7 +259,7 @@ public class MaterialSearchBar extends RelativeLayout implements View.OnClickLis
             menuIcon.setOnClickListener(this);
             popupMenu = new PopupMenu(getContext(), menuIcon);
             popupMenu.inflate(menuResource);
-            popupMenu.setGravity(Gravity.RIGHT);
+            popupMenu.setGravity(Gravity.END);
         }
     }
 
@@ -297,7 +313,12 @@ public class MaterialSearchBar extends RelativeLayout implements View.OnClickLis
      * Setup editText coloring and drawables
      */
     private void setupSearchEditText() {
-        setupCursorColor();
+        try {
+            EditTextStyleHelper.applyChanges(this.searchEdit, this.textCursorColor, this.leftTextSelectorTint, this.rightTextSelectorTint, this.middleTextSelectorTint,
+                    this.leftTextSelectorRes, this.rightTextSelectorRes, this.middleTextSelectorRes, this.textSelectorTintEnabled);
+        } catch (EditTextStyleHelper.EditTextStyleChangeError e) {
+            Log.e(TAG, "init: ", e);
+        }
         searchEdit.setHighlightColor(highlightedTextColor);
 
         if (hintText != null)
@@ -305,28 +326,6 @@ public class MaterialSearchBar extends RelativeLayout implements View.OnClickLis
         if (placeholderText != null) {
             arrowIcon.setBackground(null);
             placeHolder.setText(placeholderText);
-        }
-    }
-
-    private void setupCursorColor() {
-        try {
-            Field field = TextView.class.getDeclaredField("mEditor");
-            field.setAccessible(true);
-            Object editor = field.get(searchEdit);
-
-            field = TextView.class.getDeclaredField("mCursorDrawableRes");
-            field.setAccessible(true);
-            int cursorDrawableRes = field.getInt(searchEdit);
-            Drawable cursorDrawable = ContextCompat.getDrawable(getContext(), cursorDrawableRes).mutate();
-            cursorDrawable.setColorFilter(textCursorColor, PorterDuff.Mode.SRC_IN);
-            Drawable[] drawables = {cursorDrawable, cursorDrawable};
-            field = editor.getClass().getDeclaredField("mCursorDrawable");
-            field.setAccessible(true);
-            field.set(editor, drawables);
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
         }
     }
 
@@ -410,7 +409,7 @@ public class MaterialSearchBar extends RelativeLayout implements View.OnClickLis
     }
 
     private void setupIconRippleStyle() {
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN) {
+        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN) {
             TypedValue rippleStyle = new TypedValue();
             if (borderlessRippleEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 getContext().getTheme().resolveAttribute(android.R.attr.selectableItemBackgroundBorderless, rippleStyle, true);
@@ -422,7 +421,7 @@ public class MaterialSearchBar extends RelativeLayout implements View.OnClickLis
             menuIcon.setBackgroundResource(rippleStyle.resourceId);
             arrowIcon.setBackgroundResource(rippleStyle.resourceId);
             clearIcon.setBackgroundResource(rippleStyle.resourceId);
-        } else {
+        }else{
             Log.w(TAG, "setupIconRippleStyle() Only Available On SDK Versions Higher Than 16!");
         }
     }
@@ -462,11 +461,6 @@ public class MaterialSearchBar extends RelativeLayout implements View.OnClickLis
      * Shows search input and close arrow
      */
     public void enableSearch() {
-        if (isSearchEnabled()) {
-            onSearchActionListener.onSearchStateChanged(true);
-            searchEdit.requestFocus();
-            return;
-        }
         animateNavIcon();
         adapter.notifyDataSetChanged();
         searchEnabled = true;
@@ -497,7 +491,7 @@ public class MaterialSearchBar extends RelativeLayout implements View.OnClickLis
 
     private void animateSuggestions(int from, int to) {
         suggestionsVisible = to > 0;
-        final RelativeLayout last = findViewById(R.id.last);
+        final RelativeLayout last = (RelativeLayout) findViewById(R.id.last);
         final ViewGroup.LayoutParams lp = last.getLayoutParams();
         if (to == 0 && lp.height == 0)
             return;
@@ -535,20 +529,6 @@ public class MaterialSearchBar extends RelativeLayout implements View.OnClickLis
      */
     public boolean isSuggestionsVisible() {
         return suggestionsVisible;
-    }
-
-    /**
-     * Check if suggestions are enabled
-     */
-    public boolean isSuggestionsEnabled() {
-        return isSuggestionsEnabled;
-    }
-
-    /**
-     * Set suggestions enabled
-     */
-    public void setSuggestionsEnabled(boolean suggestionsEnabled) {
-        isSuggestionsEnabled = suggestionsEnabled;
     }
 
     /**
@@ -665,6 +645,16 @@ public class MaterialSearchBar extends RelativeLayout implements View.OnClickLis
     /**
      * Set the place holder text
      *
+     * @param placeholder placeholder text
+     */
+    public void setPlaceHolder(CharSequence placeholder) {
+        this.placeholderText = placeholder;
+        placeHolder.setText(placeholder);
+    }
+
+    /**
+     * Set the place holder text
+     *
      * @return placeholder text
      */
     public CharSequence getPlaceHolderText() {
@@ -731,7 +721,7 @@ public class MaterialSearchBar extends RelativeLayout implements View.OnClickLis
      */
     public void setCustomSuggestionAdapter(SuggestionsAdapter suggestionAdapter) {
         this.adapter = suggestionAdapter;
-        RecyclerView recyclerView = findViewById(R.id.mt_recycler);
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.mt_recycler);
         recyclerView.setAdapter(adapter);
     }
 
@@ -752,20 +742,6 @@ public class MaterialSearchBar extends RelativeLayout implements View.OnClickLis
     }
 
     /**
-     * Sets the array of recent search queries.
-     * It is advisable to save the queries when the activity is destroyed
-     * and call this method when creating the activity.
-     * <p><b color="red">Pass a List< String > if You don't use custom adapter.</b></p>
-     *
-     * @param suggestions an array of queries
-     * @see #getLastSuggestions()
-     * @see #setMaxSuggestionCount(int)
-     */
-    public void setLastSuggestions(List suggestions) {
-        adapter.setSuggestions(suggestions);
-    }
-
-    /**
      * Changes the array of recent search queries with animation.
      * <p><b color="red">Pass a List< String >  if You don't use custom adapter.</b></p>
      *
@@ -783,12 +759,26 @@ public class MaterialSearchBar extends RelativeLayout implements View.OnClickLis
     }
 
     /**
+     * Sets the array of recent search queries.
+     * It is advisable to save the queries when the activity is destroyed
+     * and call this method when creating the activity.
+     * <p><b color="red">Pass a List< String > if You don't use custom adapter.</b></p>
+     *
+     * @param suggestions an array of queries
+     * @see #getLastSuggestions()
+     * @see #setMaxSuggestionCount(int)
+     */
+    public void setLastSuggestions(List suggestions) {
+        adapter.setSuggestions(suggestions);
+    }
+
+    /**
      * Allows you to intercept the suggestions click event
      * <p><b color="red">This method will not work with custom Suggestion Adapter</b></p>
      *
      * @param listener click listener
      */
-    public void setSuggestionsClickListener(SuggestionsAdapter.OnItemViewClickListener listener) {
+    public void setSuggstionsClickListener(SuggestionsAdapter.OnItemViewClickListener listener) {
         if (adapter instanceof DefaultSuggestionsAdapter)
             ((DefaultSuggestionsAdapter) adapter).setListener(listener);
     }
@@ -850,8 +840,8 @@ public class MaterialSearchBar extends RelativeLayout implements View.OnClickLis
             navIcon.setClickable(true);
             navIcon.getLayoutParams().width = (int) (50 * destiny);
 
-            ((LayoutParams) inputContainer.getLayoutParams()).leftMargin = (int) (50 * destiny);
-            arrowIcon.setVisibility(GONE);
+            //((LayoutParams) inputContainer.getLayoutParams()).leftMargin = (int) (50 * destiny);
+            //arrowIcon.setVisibility(GONE);
         } else {
             navIcon.getLayoutParams().width = 1;
             navIcon.setVisibility(INVISIBLE);
@@ -882,17 +872,8 @@ public class MaterialSearchBar extends RelativeLayout implements View.OnClickLis
      * @param elevation desired elevation
      */
     public void setCardViewElevation(int elevation) {
-        CardView cardView = findViewById(R.id.mt_container);
+        CardView cardView = (CardView) findViewById(R.id.mt_container);
         cardView.setCardElevation(elevation);
-    }
-
-    /**
-     * Get search text
-     *
-     * @return text
-     */
-    public String getText() {
-        return searchEdit.getText().toString();
     }
 
     /**
@@ -905,30 +886,21 @@ public class MaterialSearchBar extends RelativeLayout implements View.OnClickLis
     }
 
     /**
+     * Get search text
+     *
+     * @return text
+     */
+    public String getText() {
+        return searchEdit.getText().toString();
+    }
+
+    /**
      * Add text watcher to searchbar's EditText
      *
      * @param textWatcher textWatcher to add
      */
     public void addTextChangeListener(TextWatcher textWatcher) {
         searchEdit.addTextChangedListener(textWatcher);
-    }
-
-    public EditText getSearchEditText() {
-        return searchEdit;
-    }
-
-    public TextView getPlaceHolderView() {
-        return placeHolder;
-    }
-
-    /**
-     * Set the place holder text
-     *
-     * @param placeholder placeholder text
-     */
-    public void setPlaceHolder(CharSequence placeholder) {
-        this.placeholderText = placeholder;
-        placeHolder.setText(placeholder);
     }
 
     private boolean listenerExists() {
@@ -974,7 +946,7 @@ public class MaterialSearchBar extends RelativeLayout implements View.OnClickLis
         } else {
             searchIcon.setVisibility(GONE);
             searchEdit.requestFocus();
-            if (!suggestionsVisible && isSuggestionsEnabled)
+            if (!suggestionsVisible)
                 showSuggestionsList();
         }
     }
@@ -1031,8 +1003,34 @@ public class MaterialSearchBar extends RelativeLayout implements View.OnClickLis
             /*Order of two line should't be change,
             because should calculate the height of item first*/
             animateSuggestions(getListHeight(false), getListHeight(true));
-            adapter.deleteSuggestion(position, v.getTag());
+            adapter.deleteSuggestion(position, (String) v.getTag());
         }
+    }
+
+    /**
+     * Interface definition for MaterialSearchBar callbacks.
+     */
+    public interface OnSearchActionListener {
+        /**
+         * Invoked when SearchBar opened or closed
+         *
+         * @param enabled state
+         */
+        void onSearchStateChanged(boolean enabled);
+
+        /**
+         * Invoked when search confirmed and "search" button is clicked on the soft keyboard
+         *
+         * @param text search input
+         */
+        void onSearchConfirmed(CharSequence text);
+
+        /**
+         * Invoked when "speech" or "navigation" buttons clicked.
+         *
+         * @param buttonCode {@link #BUTTON_NAVIGATION}, {@link #BUTTON_SPEECH} or {@link #BUTTON_BACK} will be passed
+         */
+        void onButtonClicked(int buttonCode);
     }
 
     @Override
@@ -1065,54 +1063,7 @@ public class MaterialSearchBar extends RelativeLayout implements View.OnClickLis
         }
     }
 
-    @Override
-    public boolean dispatchKeyEvent(KeyEvent event) {
-        if (event.getKeyCode() == KeyEvent.KEYCODE_BACK && searchEnabled) {
-            animateSuggestions(getListHeight(false), 0);
-            disableSearch();
-            return true;
-        }
-        return super.dispatchKeyEvent(event);
-    }
-
-    /**
-     * Interface definition for MaterialSearchBar callbacks.
-     */
-    public interface OnSearchActionListener {
-        /**
-         * Invoked when SearchBar opened or closed
-         *
-         * @param enabled state
-         */
-        void onSearchStateChanged(boolean enabled);
-
-        /**
-         * Invoked when search confirmed and "search" button is clicked on the soft keyboard
-         *
-         * @param text search input
-         */
-        void onSearchConfirmed(CharSequence text);
-
-        /**
-         * Invoked when "speech" or "navigation" buttons clicked.
-         *
-         * @param buttonCode {@link #BUTTON_NAVIGATION}, {@link #BUTTON_SPEECH} or {@link #BUTTON_BACK} will be passed
-         */
-        void onButtonClicked(int buttonCode);
-    }
-
     private static class SavedState extends BaseSavedState {
-        public static final Creator<SavedState> CREATOR = new Creator<SavedState>() {
-            @Override
-            public SavedState createFromParcel(Parcel source) {
-                return new SavedState(source);
-            }
-
-            @Override
-            public SavedState[] newArray(int size) {
-                return new SavedState[size];
-            }
-        };
         private int isSearchBarVisible;
         private int suggestionsVisible;
         private int speechMode;
@@ -1121,6 +1072,20 @@ public class MaterialSearchBar extends RelativeLayout implements View.OnClickLis
         private String hint;
         private List suggestions;
         private int maxSuggestions;
+
+        @Override
+        public void writeToParcel(Parcel out, int flags) {
+            super.writeToParcel(out, flags);
+            out.writeInt(isSearchBarVisible);
+            out.writeInt(suggestionsVisible);
+            out.writeInt(speechMode);
+
+            out.writeInt(searchIconRes);
+            out.writeInt(navIconResId);
+            out.writeString(hint);
+            out.writeList(suggestions);
+            out.writeInt(maxSuggestions);
+        }
 
         public SavedState(Parcel source) {
             super(source);
@@ -1139,18 +1104,26 @@ public class MaterialSearchBar extends RelativeLayout implements View.OnClickLis
             super(superState);
         }
 
-        @Override
-        public void writeToParcel(Parcel out, int flags) {
-            super.writeToParcel(out, flags);
-            out.writeInt(isSearchBarVisible);
-            out.writeInt(suggestionsVisible);
-            out.writeInt(speechMode);
+        public static final Creator<SavedState> CREATOR = new Creator<SavedState>() {
+            @Override
+            public SavedState createFromParcel(Parcel source) {
+                return new SavedState(source);
+            }
 
-            out.writeInt(searchIconRes);
-            out.writeInt(navIconResId);
-            out.writeString(hint);
-            out.writeList(suggestions);
-            out.writeInt(maxSuggestions);
+            @Override
+            public SavedState[] newArray(int size) {
+                return new SavedState[size];
+            }
+        };
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (event.getKeyCode() == KeyEvent.KEYCODE_BACK && searchEnabled) {
+            animateSuggestions(getListHeight(false), 0);
+            disableSearch();
+            return true;
         }
+        return super.dispatchKeyEvent(event);
     }
 }
