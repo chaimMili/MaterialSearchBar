@@ -313,12 +313,6 @@ public class MaterialSearchBar extends RelativeLayout implements View.OnClickLis
      * Setup editText coloring and drawables
      */
     private void setupSearchEditText() {
-        try {
-            EditTextStyleHelper.applyChanges(this.searchEdit, this.textCursorColor, this.leftTextSelectorTint, this.rightTextSelectorTint, this.middleTextSelectorTint,
-                    this.leftTextSelectorRes, this.rightTextSelectorRes, this.middleTextSelectorRes, this.textSelectorTintEnabled);
-        } catch (EditTextStyleHelper.EditTextStyleChangeError e) {
-            Log.e(TAG, "init: ", e);
-        }
         searchEdit.setHighlightColor(highlightedTextColor);
 
         if (hintText != null)
